@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Flasky - Test Form Page{% endblock %}
+
+{% block page_content %}
+    <form method="post" action="{{ url_for('.display_test') }}">
+        <div class="form-group">
+            <label for="exampleInputEmail">Email address</label>
+            <input type="email" class="form-control" id="exampleInputEmail" placeholder="Email">
+        </div>
+    </form>
+{% endblock %}
