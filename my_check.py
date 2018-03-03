@@ -45,7 +45,8 @@ e2c_recommendations = {
     'Reduce or eliminate persistent connections to reduce connection usage': u'通过减少或消除长连接的方式来减少连接的使用',
     'When making adjustments, make tmp_table_size/max_heap_table_size equal': u'调整tmp\_table\_size max\_heap\_table\_size相等',
     'Reduce your SELECT DISTINCT queries without LIMIT clauses': u'减少select distinct后无limit语句的执行',
-    'Add skip-innodb to MySQL configuration to disable InnoDB': u'通过向MySQL配置文件增加skip-innodb的方式禁用innodb'
+    'Add skip-innodb to MySQL configuration to disable InnoDB': u'通过向MySQL配置文件增加skip-innodb的方式禁用innodb',
+    'MySQL data directory need increase disk space!': u'MySQL数据文件目录需要增加磁盘空间'
 }
 
 
@@ -54,6 +55,7 @@ def rename_ip_to_name(target_dir):
     with open('/home/vicigel/works/sunshine/ip2name.txt') as f:
         for item in f:
             temp = item.split('\t')
+            print temp
             file_dict[temp[0]] = temp[1].replace('\n', '')
     os.chdir(target_dir)
 
@@ -62,7 +64,7 @@ def rename_ip_to_name(target_dir):
             if file_dict.has_key(item[:-4]):
                 os.rename(item, file_dict[item[:-4]] + '(' + item[:-4] + ':3306).txt')
             else:
-                print item[:-4] + 'not in ip2name.txt,please check!'
+                print item[:-4] + ' not in ip2name.txt,please check!'
 
 
 def collect_data(target_dir):
@@ -143,6 +145,9 @@ def collect_data(target_dir):
                 continue
             elif item.find('Thread cache hit rate') > 0:
                 temp_dict['thread_cache_hit'] = item[item.find(':') + 2:item.find('(')].replace('%', '\%')
+                continue
+            elif item.find('Table cache hit rate') > 0:
+                temp_dict['table_cache_hit'] = item[item.find(':') + 2:item.find('(')].replace('%', '\%')
                 continue
             elif item.find('InnoDB log waits') > 0:
                 temp_dict['innodb_log_wait'] = item[item.find(':') + 1:]
@@ -386,11 +391,12 @@ def write_tex(result_data, file_name):
         idx += 1
         if len(v['recommendations']) == 0:
             continue
-        f.write(str(idx) + '、' + k[:k.find('(')] + '\n')
+        f.write(str(idx) + '、' + k[:k.find(')') + 1] + '\n')
         f.write('\\\\\n')
         for a, b in enumerate(v['recommendations']):
-            f.write(str(a + 1) + ') ' + e2c_recommendations[b].encode('utf-8') + '\n')
-            f.write('\\\\\n')
+            if b in e2c_recommendations:
+                f.write(str(a + 1) + ') ' + e2c_recommendations[b].encode('utf-8') + '\n')
+                f.write('\\\\\n')
         f.write('\\\\\n')
 
     f.write('\\end{document}')
@@ -402,8 +408,9 @@ if __name__ == "__main__":
         sys.exit(1)
 
     rename_ip_to_name(sys.argv[1])
-
+    print True
     result_dict_data = collect_data(sys.argv[1])
+    print True
 
     if 1 < date.today().day < 15:
         target_date = (date.today() - timedelta(days=31)).strftime('%Y%m')
