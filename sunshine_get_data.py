@@ -5,6 +5,7 @@ import multiprocessing
 import sys
 import socket
 import logging
+import commands
 
 curr_dir = os.path.abspath(os.path.dirname(__file__))
 mytuning_path = os.sep.join([curr_dir, 'mytuning.pl'])
@@ -13,6 +14,15 @@ host_list_path = os.sep.join([curr_dir, 'host_list'])
 host_list_dir = os.sep.join([curr_dir, 'host_dir'])
 scripts_file_path = os.sep.join([curr_dir, 'scripts'])
 source_file = './xunjian/{0}.txt'
+
+for item in (dest_file_path, host_list_dir, scripts_file_path):
+    if not os.path.exists(item):
+        os.makedirs(item)
+
+for item in ('check_file_path', 'check_path'):
+    temp_path = os.path.join(scripts_file_path, item)
+    if not os.path.exists(temp_path):
+        os.mkdir(temp_path)
 
 if date.isoformat(date.today()) not in os.listdir(os.sep.join([curr_dir, 'result'])):
     os.mkdir(dest_file_path)
@@ -71,66 +81,77 @@ def check_mysql_path(host):
         t.close()
 
 
-def check(host, logger):
-    try:
-        hostname, username, password, mysql_user, mysql_pass, mysql_socket = host
-        client = paramiko.SSHClient()
-        client.load_system_host_keys()
-        client.set_missing_host_key_policy(paramiko.WarningPolicy())
-        client.connect(hostname, port=22, username=username, password=password, timeout=5)
-        sftp = client.open_sftp()
+def check(hosts, logger):
+    print 'hehehe'
+    for host in hosts:
+        print host
+        print 'hahahah'
+        try:
+            hostname, username, password, mysql_user, mysql_pass, mysql_socket = host
+            client = paramiko.SSHClient()
+            client.load_system_host_keys()
+            client.set_missing_host_key_policy(paramiko.WarningPolicy())
+            client.connect(hostname, port=22, username=username, password=password, timeout=5)
+            sftp = client.open_sftp()
 
-        stdin, stdout, stderr = client.exec_command('ls -d xunjian')
-        if stderr.read().find('No such file or directory') > 0:
-            stdin, stdout, stderr = client.exec_command('mkdir xunjian')
-            stderr.read()
+            stdin, stdout, stderr = client.exec_command('ls -d xunjian')
+            if stderr.read().find('No such file or directory') > 0:
+                stdin, stdout, stderr = client.exec_command('mkdir xunjian')
+                stderr.read()
+                stdout.read()
+
+            stdin, stdout, stderr = client.exec_command('ls -l ./xunjian/mytuning.pl')
+            if stderr.read().find('No such file or directory') > 0:
+                sftp.put(mytuning_path, './xunjian/mytuning.pl')
+
+            sftp.put(os.sep.join((scripts_file_path, 'check_path', hostname)), './xunjian/xunjian.sh')
+
+            client.exec_command('chmod a+x ./xunjian/mytuning.pl')
+
+            stdin, stdout, stderr = client.exec_command('chmod a+x ./xunjian/xunjian.sh')
             stdout.read()
+            stderr.read()
+            stdin, stdout, stderr = client.exec_command('./xunjian/xunjian.sh')
+            print source_file.format(hostname), dest_file_path + '/{0}.txt'.format(hostname)
+            stdout.read()
+            stderr.read()
+            sftp.get(source_file.format(hostname), dest_file_path + '/{0}.txt'.format(hostname))
 
-        stdin, stdout, stderr = client.exec_command('ls -l ./xunjian/mytuning.pl')
-        if stderr.read().find('No such file or directory') > 0:
-            sftp.put(mytuning_path, './xunjian/mytuning.pl')
-        
-        sftp.put(os.sep.join((scripts_file_path, 'check_path', hostname)), './xunjian/xunjian.sh')
-
-        client.exec_command('chmod a+x ./xunjian/mytuning.pl')
-
-        stdin, stdout, stderr = client.exec_command('chmod a+x ./xunjian/xunjian.sh')
-        stdout.read()
-        stderr.read()
-        stdin, stdout, stderr = client.exec_command('./xunjian/xunjian.sh')
-        print source_file.format(hostname), dest_file_path + '/{0}.txt'.format(hostname)
-        stdout.read()
-        stderr.read()
-        sftp.get(source_file.format(hostname), dest_file_path + '/{0}.txt'.format(hostname))
-
-        sftp.close()
-        client.close()
-    except socket.timeout:
-        logger.error(hostname + ' could not be reached!')
-        sys.exit(2)
-    except IOError:
-        logger.error(hostname + ' has no Permission')
-        sys.exit(1)
-    except paramiko.ssh_exception.AuthenticationException:
-        logger.error(hostname + ' authentication failure!')
-        sys.exit(3)
-    finally:
-        client.close()
+            sftp.close()
+            client.close()
+        except socket.timeout:
+            logger.error(hostname + ' could not be reached!')
+        except IOError:
+            logger.error(hostname + ' has no Permission')
+        except paramiko.ssh_exception.AuthenticationException:
+            logger.error(hostname + ' authentication failure!')
+        finally:
+            client.close()
 
 
 def multi_check(check_name, hosts_list):
-    logger = logging.getLogger(hosts_list.get('name'))
-    logger.setLevel(logging.ERROR)
-    formatter = logging.Formatter('%(asctime)s %(levelname)-8s: %(message)s')
-    file_handler = logging.FileHandler(hosts_list.get('name') + '.log', 'a')
-    file_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
+
+    logger_dict = {}
+    for host_filename, hosts in hosts_list.items():
+        logger = logging.getLogger(host_filename)
+        logger.setLevel(logging.INFO)
+        formatter = logging.Formatter('%(asctime)s %(levelname)-8s: %(message)s')
+        file_handler = logging.FileHandler('.log', 'a')
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+        logger_dict[host_filename] = logger
 
     processes = []
     if check_name == 'check':
-        for index, host in enumerate(hosts_list):
-            process = multiprocessing.Process(target=check, args=[host, logger], name=host[0])
-            processes.append()
+        for host_filename, hosts in hosts_list.items():
+            print host_filename
+
+            process = multiprocessing.Process(target=check, args=[hosts, logger_dict.get(host_filename)], name=host_filename)
+            print host_filename + ' process start'
+            processes.append(process)
+            print host_filename + ' process end'
+
+        for process in processes:
             process.start()
 
     if check_name == 'check_mysql_path':
@@ -139,19 +160,26 @@ def multi_check(check_name, hosts_list):
             processes.append()
             process.start()
 
-    for t in processes:
-        t.join()
 
 if __name__ == "__main__":
     param = sys.argv
     if param[1] not in ('check_mysql_path', 'check'):
         print 'Your input have something wrong,please check'
         sys.exit(1)
+
+    with open(host_list_path, 'r') as f:
+        lines = f.readlines()
+        file_len = len(lines)
+
+    commands.getoutput('split -l ' + ' '.join([str(file_len / 4), host_list_path]))
+    commands.getoutput('mv xa* ' + host_list_dir)
+
+    host_list = {}
     for host_file in os.listdir(host_list_dir):
         with open(os.sep.join((host_list_dir, host_file)), 'r') as f:
-            host_list = []
+            host_list[host_file] = []
             for line in f:
-                host_list.append(line.replace('\r\n', '').replace('\n', '').split())
-            make_running_script(host_list)
-            multi_check(param[1], host_list, host_file)
+                host_list[host_file].append(line.replace('\r\n', '').replace('\n', '').split())
+            make_running_script(host_list[host_file])
+            multi_check(param[1], host_list)
 
