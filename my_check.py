@@ -49,6 +49,12 @@ e2c_recommendations = {
     'MySQL data directory need increase disk space!': u'MySQL数据文件目录需要增加磁盘空间'
 }
 
+customer_dict = {
+    '1': '中央国债',
+    '2': '全国股转',
+    '3': '阳光保险'
+}
+
 
 def rename_ip_to_name(target_dir):
     file_dict = {}
@@ -109,16 +115,6 @@ def collect_data(target_dir):
                     avali = float(item[item.find('Avali:') + 7:item.find('G')])
                 else:
                     avali = float(item[item.find('Avali:') + 7:item.find('T')]) * 1024
-#                print item.find('Use%:')
-#                print item[item.find('Use:') + 6:item.rfind('%')]
-#                use_per = float(item[item.find('Use%:') + 6:item.rfind('%')])
-#                if use_per > 80:
-#                    temp_dict['warning'] = '数据库磁盘空间剩余小于80%'
-#                if avali / (1 - use_per) * use_per > 800:
-#                    if temp_dict['warning'] != '':
-#                        temp_dict['warning'] = '数据库磁盘使用超过800G，请考虑清理或整改'
-#                    else:
-#                        temp_dict['warning'] += '数据库磁盘使用超过800G，请考虑清理或整改'
                 continue
             elif item.find('Up for:') > 0:
                 temp_dict['up_time'] = item[item.find(':') + 2:item.find('(') - 1]
@@ -130,10 +126,6 @@ def collect_data(target_dir):
                 temp_dict['slow_query_ratio'] = item[item.find(':') + 2:item.find('(')].replace('%', '\%')
                 continue
             elif item.find('available connections') > 0:
-                connect_info = item[item.find('(') + 1:item.find(')')].split('/')
-                temp_dict['connection_info'] = '最大连接数: ' + connect_info[1] + ';历史最大并发连接数： ' + connect_info[0]
-                continue
-            elif item.find('Highest connection usage') > 0:
                 connect_info = item[item.find('(') + 1:item.find(')')].split('/')
                 temp_dict['connection_info'] = '最大连接数: ' + connect_info[1] + ';历史最大并发连接数： ' + connect_info[0]
                 continue
@@ -154,6 +146,9 @@ def collect_data(target_dir):
                 continue
             elif item.find('InnoDB Buffer Pool Hit hate') > 0:
                 temp_dict['innodb_buffer_pool_hit'] = item[item.find(':') + 1:].replace('%', '\%')
+                continue
+            elif item.find('Slave_UUID') >= 0:
+                temp_dict['slave_status'] = '主库'
                 continue
             elif item.find('Slave_IO_Running:') > 0:
                 if item.split(':')[1].strip() == 'Yes':
@@ -179,7 +174,7 @@ def collect_data(target_dir):
     return result_dict
 
 
-def write_tex(result_data, file_name):
+def write_tex(result_data, file_name, customer):
     f = open(file_name, 'w')
     s = []
     for value in result_data.values():
@@ -208,7 +203,7 @@ def write_tex(result_data, file_name):
     \\rhead{\\ifthenelse{\\value{page}=1}{\\textbf {\\Large 上海爱可生信息技术股份有限公司}}{\\footnotesize Page \\thepage\\ of \\pageref{LastPage}}}
     \\rfoot{\\ifthenelse{\\value{page}=1}{\\small 上海爱可生---服务部}{}}
     \\author{Vicigel}
-    \\title{阳光保险MySQL数据库健康巡检报告}
+    \\title{''' + customer_dict.get(customer) + '''MySQL数据库健康巡检报告}
     \\date{\\vspace{-5ex}}
 
 
@@ -223,7 +218,7 @@ def write_tex(result_data, file_name):
 
         \\underline{\\textbf {\\large 版权声明：}}\\\\
     	\\small
-    	Copyright 2017 上海爱可生信息技术股份有限公司.\\\\
+    	Copyright 2018 上海爱可生信息技术股份有限公司.\\\\
     	这封电子邮件（包括附件）是保密的，并可能在法律上受到保护，请勿透露邮件内容给任何第三方。如果您不是收件人或其授权的代理收件人，您是禁止使用，复制或分发这封电子邮件的内容以及附件。如果您收到了这封误发的电子邮件，请通知寄件人立即返回电子邮箱，删除此邮件的所有副本以及附件。\\\\
     	\\clearpage
     	\\normalsize
@@ -231,7 +226,7 @@ def write_tex(result_data, file_name):
 
         \\justify
         \\section{报告说明}
-        本巡检报告是针对阳光保险集团的MySQL数据库主机的系统资源、数据库各种重要的性能指标采集分析，得出调整建议供用户决策评估。
+        本巡检报告是针对''' + customer_dict.get(customer) + '''的MySQL数据库主机的系统资源、数据库各种重要的性能指标采集分析，得出调整建议供用户决策评估。
         \\FloatBarrier
         \\section{巡检项}
             \\subsection{系统资源部分}
@@ -391,7 +386,7 @@ def write_tex(result_data, file_name):
         idx += 1
         if len(v['recommendations']) == 0:
             continue
-        f.write(str(idx) + '、' + k[:k.find(')') + 1] + '\n')
+        f.write(str(idx) + '、' + (k[:k.find(')') + 1] if customer == '3' else k[:-4]) + '\n')
         f.write('\\\\\n')
         for a, b in enumerate(v['recommendations']):
             if b in e2c_recommendations:
@@ -407,7 +402,8 @@ if __name__ == "__main__":
         print 'Please specify the source file directory!'
         sys.exit(1)
 
-    rename_ip_to_name(sys.argv[1])
+    if sys.argv[2] == '3':
+        rename_ip_to_name(sys.argv[1])
     print True
     result_dict_data = collect_data(sys.argv[1])
     print True
@@ -416,5 +412,6 @@ if __name__ == "__main__":
         target_date = (date.today() - timedelta(days=31)).strftime('%Y%m')
     else:
         target_date = date.today().strftime('%Y%m')
-    target_file_name = '/home/vicigel/工作/阳光巡检脚本/latex/阳光保险MySQL数据库健康巡检报告-' + target_date + '.tex'
-    write_tex(result_dict_data, target_file_name)
+    target_file_name = '/home/vicigel/工作/latex/' + customer_dict.get(sys.argv[2]) + \
+                       'MySQL数据库健康巡检报告-' + target_date + '.tex'
+    write_tex(result_dict_data, target_file_name, sys.argv[2])
