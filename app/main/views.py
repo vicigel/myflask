@@ -61,18 +61,16 @@ def index():
                            display_full=False)
 
 
-@main.route('/addblog', methods=['POST'])
+@main.route('/addblog', methods=['POST', 'GET'])
 def addblog():
     form = PostForm1()
     if current_user.can(Permission.WRITE_ARTICLES) and \
         form.validate_on_submit():
         post = Post(body=form.text.data, author=current_user._get_current_object())
         db.session.add(post)
-        return redirect(url_for('addblog'))
+        return redirect(url_for('.addblog'))
 
     return render_template('addblog.html', form=form)
-
-
 
 
 @main.route('/user/<username>')
