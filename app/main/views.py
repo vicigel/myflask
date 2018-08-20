@@ -14,7 +14,7 @@ def test():
     return render_template('test.html', form=form)
 
 
-@main.route('/display-test', methods=['POST'])
+@main.route('/display-test', methods=['GET'])
 def display_test():
     return '哈哈哈，怕了吧'
 
