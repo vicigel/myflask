@@ -21,12 +21,12 @@ def display_test():
 
 @main.route('/about-me')
 def about_me():
-    return '咦～～～～～～～～～`'
+    return render_template('about_me.html')
 
 
 @main.route('/about-blog')
 def about_blog():
-    return '哈哈哈哈'
+    return render_template('about_blog.html')
 
 
 @main.route('/', methods=['GET', 'POST'])
@@ -145,7 +145,7 @@ def edit(id):
 def moderate():
     page = request.args.get('page', 1, type=int)
     pagination = Comment.query.order_by(Comment.timestamp.desc()).paginate(
-        page, per_page=current_app.config['FLASKY_COMMENTS_PER_PAGE'],
+        page, per_page=int(current_app.config['FLASKY_COMMENTS_PER_PAGE']),
         error_out=False
     )
     comments = pagination.items

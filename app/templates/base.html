@@ -1,7 +1,9 @@
 {% extends "bootstrap/base.html" %}
-{% block title %}Flasky{% endblock %}
+{% block title %}数据库微分享{% endblock %}
 {% block navbar %}
-<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="jumbotron text-center" style="margin-bottom:0;height: 100px">
+    </div>
+<nav class="navbar navbar-inverse">
     <div class="container">
         <div class="navbar-header">
             <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
@@ -38,23 +40,32 @@
             </ul>
         </div>
     </div>
-</div>
+</nav>
 {% endblock %}
 {% block content %}
-<div class="container">
-    {% for message in get_flashed_messages() %}
-        <div class="alert alert-warning">
-            <button type="button" class="close" data-dismiss="alert">&times;</button>
-            {{ message }}
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-2">
+                <h3>链接</h3>
+            </div>
+            <div class="col-sm-8">
+                {% for message in get_flashed_messages() %}
+                    <div class="alert alert-warning">
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+                {% block page_content %}{% endblock %}
+            </div>
         </div>
-    {% endfor %}
-    {% block page_content %}{% endblock %}
-</div>
+    </div>
 {% endblock %}
 {% block scripts %}
     {{ super() }}
     {{ moment.include_moment() }}
+    <!--
     <style type="text/css">
         body {padding-top: 70px;}
     </style>
+    -->
 {% endblock %}
