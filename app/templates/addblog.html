@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Edit Post{% endblock %}
+{% block page_content %}
+    <link rel="stylesheet" href="{{ url_for('static',filename='editormd/css/editormd.css') }}"/>
+    <div class="row">
+        <h1 class="text-center">Edit Post</h1>
+
+        <form method="post" action="{{ url_for('main.addblog') }}">
+            {{ form.hidden_tag() }}
+
+            <div class="form-group">
+                {{ form.text.label }}
+                {% if form.text.errors %}
+                    {% for e in form.text.errors %}
+                        <p class="help-block">{{ e }}</p>
+                    {% endfor %}
+                {% endif %}
+                <div id="editormd" class="form-control">
+                    {{ form.text(style="display:none;") }}
+                </div>
+            </div>
+            <input class="btn btn-primary" type="submit" value="Edit">
+        </form>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script src="{{ url_for('static',filename='editormd/editormd.min.js') }}"></script>
+    <script type="text/javascript">
+        var testEditor;
+
+        $(function () {
+            testEditor = editormd("editormd", {
+                width: "100%",
+                height: "100%",
+                syncScrolling: "single",
+                path: "{{ url_for('static',filename='editormd/lib/') }}"
+            });
+        });
+    </script>
+
+{% endblock %}
