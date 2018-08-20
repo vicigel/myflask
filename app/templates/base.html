@@ -28,6 +28,9 @@
                     {% if current_user.can(Permission.MODERATE_COMMENTS) %}
                         <li><a href="{{ url_for('main.moderate') }}">修改评论</a> </li>
                     {% endif %}
+                    {% if current_user.can(Permission.WRITE_ARTICLES) %}
+                        <li><a href="{{ url_for('main.addblog') }}">添加博文</a></li>
+                    {% endif %}
                     <li><a href="{{ url_for('auth.change_password') }}">修改密码</a></li>
                     <li><a href="{{ url_for('auth.change_email') }}">更换Email</a></li>
                     <li><a href="{{ url_for('auth.logout') }}">登出</a></li>
@@ -47,6 +50,8 @@
         <div class="row">
             <div class="col-sm-2">
                 <h3>链接</h3>
+                <li><a href="www.google.com">google</a> </li>
+                <li><a href="www.facebook.com">facebook</a> </li>
             </div>
             <div class="col-sm-8">
                 {% for message in get_flashed_messages() %}

@@ -3,7 +3,7 @@ from . import main
 from flask import render_template, abort, flash, redirect, url_for, request, current_app
 from ..models import User, Role, Permission, Post, Comment
 from flask_login import login_required, current_user
-from .forms import EditProfileForm, EditProfileAdminForm, PostForm, CommentForm
+from .forms import EditProfileForm, EditProfileAdminForm, PostForm, CommentForm, PostForm1
 from .. import db
 from ..decorators import admin_required, permission_required
 
@@ -29,6 +29,21 @@ def about_blog():
     return render_template('about_blog.html')
 
 
+@main.route('/mdtest')
+def test1():
+    mkd = '''
+    # header
+    ## header2
+    [picture](https://goss.veer.com/creative/vcg/veer/1600water/veer-169767357.jpg)
+    * 1
+    * 2
+    * 3
+    **bold**
+    '''
+
+    return render_template('test1.html', mkd=mkd)
+
+
 @main.route('/', methods=['GET', 'POST'])
 def index():
     form = PostForm()
@@ -44,6 +59,20 @@ def index():
     posts = pagination.items
     return render_template('index.html', form=form, posts=posts, pagination=pagination,
                            display_full=False)
+
+
+@main.route('/addblog', methods=['POST'])
+def addblog():
+    form = PostForm1()
+    if current_user.can(Permission.WRITE_ARTICLES) and \
+        form.validate_on_submit():
+        post = Post(body=form.text.data, author=current_user._get_current_object())
+        db.session.add(post)
+        return redirect(url_for('addblog'))
+
+    return render_template('addblog.html', form=form)
+
+
 
 
 @main.route('/user/<username>')
@@ -173,3 +202,9 @@ def moderate_disable(id):
     db.session.add(comment)
     return redirect(url_for('.moderate',
                             page=request.args.get('page', 1, type=int)))
+
+
+@login_required
+@main.route('/editmd/<int:id>', methods=['GET', 'POST'])
+def editmd(id):
+    pass

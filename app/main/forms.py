@@ -52,6 +52,13 @@ class PostForm(FlaskForm):
     submit = SubmitField("submit")
 
 
+class PostForm1(FlaskForm):
+    text = TextAreaField('Content', [DataRequired()])
+
+    def __init__(self):
+        super(PostForm1).__init__()
+
+
 class CommentForm(FlaskForm):
     body = StringField('', validators=[DataRequired()])
     submit = SubmitField(u'提交')
