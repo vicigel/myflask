@@ -6,6 +6,7 @@ from flask_pagedown import PageDown
 from flask_sqlalchemy import SQLAlchemy
 from config import config
 from flask_login import LoginManager
+from flaskext.markdown import Markdown
 
 
 bootstrap = Bootstrap()
@@ -20,6 +21,7 @@ login_manager.login_view = 'auth.login'
 
 def create_app(config_name):
     app = Flask(__name__)
+    Markdown(app)
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
 

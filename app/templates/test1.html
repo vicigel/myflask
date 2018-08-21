@@ -17,11 +17,14 @@
     $(function () {
         testEditor = editormd("test-editormd", {
             width: "90%",
-            height: 640,
+            height: 200,
             syncScrolling: "single",
             path: "{{ url_for('static',filename='editormd/lib/') }}"
         });
     });
 </script>
+<div class="col-lg-12 post-text">
+    {{ mkd|markdown|safe }}
+</div>
 </body>
 </html>

@@ -5,11 +5,31 @@
 {% block scripts %}
     {{ super() }}
     {{ pagedown.include_pagedown() }}
+
+    <!--添加markdown编辑器 开始-->
+
+    <link rel="stylesheet" href="{{ url_for('static',filename='editormd/css/editormd.css') }}"/>
+    <script src="{{ url_for('static',filename='js/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static',filename='editormd/editormd.min.js') }}"></script>
+    <script type="text/javascript">
+        var testEditor;
+
+        $(function () {
+            testEditor = editormd("test-editormd", {
+                width: "90%",
+                height: 200,
+                syncScrolling: "single",
+                path: "{{ url_for('static',filename='editormd/lib/') }}"
+            });
+        });
+    </script>
+    <!-- 添加markdown编辑器 结束-->
 {% endblock %}
 {% block page_content %}
     <div>
         {% if current_user.can(Permission.WRITE_ARTICLES) %}
-            {{ wtf.quick_form(form) }}
+            <div id="test-editormd">
+            </div>
         {% endif %}
     </div>
     <!---
