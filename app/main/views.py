@@ -4,8 +4,16 @@ from flask import render_template, abort, flash, redirect, url_for, request, cur
 from ..models import User, Role, Permission, Post, Comment
 from flask_login import login_required, current_user
 from .forms import EditProfileForm, EditProfileAdminForm, PostForm, CommentForm, PostForm1
-from .. import db
+from .. import db, mysql
 from ..decorators import admin_required, permission_required
+
+
+@main.route('/mysqltest')
+def mysqltest():
+    cur = mysql.connection.cursor()
+    cur.execute('show databases')
+    rv = cur.fetchall()
+    return render_template('mysqltest.html', rv=rv)
 
 
 @main.route('/test', methods=['GET', 'POST'])
@@ -57,20 +65,33 @@ def index():
         page, per_page=10, error_out=False
     )
     posts = pagination.items
-    return render_template('index.html', form=form, posts=posts, pagination=pagination,
+    cur = mysql.connection.cursor()
+    cur.execute("select date_format(timestamp, '%Y%m'), id from posts order by date_format(timestamp,'%Y%m') desc")
+    rv = cur.fetchall()
+    rv_dict = {}
+    for v in rv:
+        if v[0] not in rv_dict.keys():
+            rv_dict[v[0]] = [v[1]]
+        else:
+            rv_dict[v[0]].append(v[1])
+    print '----------------------'
+    print rv_dict
+    print '----------------------'
+    cur.close()
+    return render_template('index.html', form=form, posts=posts, pagination=pagination, rv_dict=rv_dict,
                            display_full=False)
 
 
 @main.route('/addblog', methods=['POST', 'GET'])
 def addblog():
-    form = PostForm1()
+    form = PostForm()
     if current_user.can(Permission.WRITE_ARTICLES) and \
         form.validate_on_submit():
-        post = Post(body=form.text.data, author=current_user._get_current_object())
+        post = Post(body=form.body.data, author=current_user._get_current_object())
         db.session.add(post)
         return redirect(url_for('.addblog'))
 
-    return render_template('addblog.html', form=form)
+    return render_template('addblog.html', form=form, add=True)
 
 
 @main.route('/user/<username>')
@@ -161,9 +182,9 @@ def edit(id):
         post.body = form.body.data
         db.session.add(post)
         flash('The post has been updated.')
-        return redirect(url_for('.post', id=post.id))
+        return redirect(url_for('.addblog', id=post.id))
     form.body.data = post.body
-    return render_template('edit_post.html', form=form)
+    return render_template('addblog.html', form=form, head='modify', id=id)
 
 
 @main.route('/moderate')
