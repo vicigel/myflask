@@ -49,7 +49,24 @@
     <div class="container">
         <div class="row">
             <div class="col-sm-2">
-                <h3>链接</h3>
+                <h3>分类</h3>
+                <li>MySQL</li>
+                <li>Hadoop</li>
+                <li>nosql</li>
+                <h3>标签</h3>
+                <li>rank</li>
+                <li>strace</li>
+                <li>linux</li>
+                <h3>文章归档</h3>
+                {% for rv_key in rv_dict.keys() %}
+                    {{ rv_key }}({{ rv_dict.get(rv_key) | length}})
+                    {% for rv_value in rv_dict.get(rv_key) %}
+                        <li><a href="{{ url_for('.post', id=rv_value ) }}">{{ rv_value }}</a></li>
+                    {% endfor %}
+                {% endfor %}
+                <li>第一篇文章</li>
+                <li>第二篇文章</li>
+                <h3>友情链接</h3>
                 <li><a href="www.google.com">google</a> </li>
                 <li><a href="www.facebook.com">facebook</a> </li>
             </div>

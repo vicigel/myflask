@@ -26,12 +26,28 @@
     <!-- 添加markdown编辑器 结束-->
 {% endblock %}
 {% block page_content %}
-    <div>
+    <!--
+    <div class="row">
         {% if current_user.can(Permission.WRITE_ARTICLES) %}
-            <div id="test-editormd">
-            </div>
+            <form method="post" action="{{ url_for('main.index') }}" >
+                {{ form.hidden_tag() }}
+                <div class="form-group">
+                    {{ form.body.label }}
+                    {% if form.body.errors %}
+                        {% for e in form.body.errors %}
+                        <p class="help-block">{{ e }}</p>
+                        {% endfor %}
+                    {% endif %}
+                    <div id="test-editormd" class="form-control">
+                    {{ form.body(style="display:none;") }}
+                    </div>
+                </div>
+                <input class="btn btn-primary" type="submit" value="提交">
+            </form>
         {% endif %}
     </div>
+    -->
+
     <!---
     <ul class="posts">
         {% for post in posts %}

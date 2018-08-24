@@ -3,23 +3,24 @@
 {% block page_content %}
     <link rel="stylesheet" href="{{ url_for('static',filename='editormd/css/editormd.css') }}"/>
     <div class="row">
-        <h1 class="text-center">Edit Post</h1>
+        <h1 class="text-center">{% if add %}添加博文{% else %}修改博文{% endif %}</h1>
 
-        <form method="post" action="{{ url_for('main.addblog') }}">
+        <form method="post"
+              action="{% if add %}{{ url_for('main.addblog') }}{% else %}{{ url_for('main.edit', id=id) }}{% endif %}">
             {{ form.hidden_tag() }}
 
             <div class="form-group">
-                {{ form.text.label }}
-                {% if form.text.errors %}
-                    {% for e in form.text.errors %}
+                {{ form.body.label }}
+                {% if form.body.errors %}
+                    {% for e in form.body.errors %}
                         <p class="help-block">{{ e }}</p>
                     {% endfor %}
                 {% endif %}
                 <div id="editormd" class="form-control">
-                    {{ form.text(style="display:none;") }}
+                    {{ form.body(style="display:none;") }}
                 </div>
             </div>
-            <input class="btn btn-primary" type="submit" value="Edit">
+            <input class="btn btn-primary" type="submit" value="{% if add %}提交{% else %}修改{% endif %}">
         </form>
     </div>
 {% endblock %}
