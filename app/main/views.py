@@ -65,6 +65,12 @@ def index():
         page, per_page=10, error_out=False
     )
     posts = pagination.items
+    return render_template('index.html', form=form, posts=posts, pagination=pagination,
+                           display_full=False)
+
+
+@main.route('/get_base')
+def get_base():
     cur = mysql.connection.cursor()
     cur.execute("select date_format(timestamp, '%Y%m'), id from posts order by date_format(timestamp,'%Y%m') desc")
     rv = cur.fetchall()
@@ -78,8 +84,6 @@ def index():
     print rv_dict
     print '----------------------'
     cur.close()
-    return render_template('index.html', form=form, posts=posts, pagination=pagination, rv_dict=rv_dict,
-                           display_full=False)
 
 
 @main.route('/addblog', methods=['POST', 'GET'])
