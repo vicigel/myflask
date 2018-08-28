@@ -58,12 +58,12 @@
                 <li>strace</li>
                 <li>linux</li>
                 <h3>文章归档</h3>
-                {% for rv_key in rv_dict.keys() %}
-                    {{ rv_key }}({{ rv_dict.get(rv_key) | length}})
-                    {% for rv_value in rv_dict.get(rv_key) %}
-                        <li><a href="{{ url_for('.post', id=rv_value ) }}">{{ rv_value }}</a></li>
-                    {% endfor %}
-                {% endfor %}
+                <li><a href={{ url_for('.post', id=0) }} >0</a></li>
+                <!--
+                -->
+                <div id="b">
+
+                </div>
                 <li>第一篇文章</li>
                 <li>第二篇文章</li>
                 <h3>友情链接</h3>
@@ -90,4 +90,20 @@
         body {padding-top: 70px;}
     </style>
     -->
+    <script type="text/javascript">
+        $.get(
+            "get_base",
+            function(data){
+                var jsonobj = eval('(' + data + ')');
+                var str = ""
+                for (var i in jsonobj){
+                    str += "<h4>" + i + "</h4>";
+                    for (var j in jsonobj[i]){
+                        str += '<li><a href="/post/' + (j+1) + '">' + (j+1) + '</a></li>';
+                    }
+                }
+                var tbody=window.document.getElementById("b");
+                tbody.innerHTML = str;
+        });
+    </script>
 {% endblock %}
