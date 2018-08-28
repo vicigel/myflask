@@ -6,6 +6,7 @@ from flask_login import login_required, current_user
 from .forms import EditProfileForm, EditProfileAdminForm, PostForm, CommentForm, PostForm1
 from .. import db, mysql
 from ..decorators import admin_required, permission_required
+import json
 
 
 @main.route('/mysqltest')
@@ -84,6 +85,7 @@ def get_base():
     print rv_dict
     print '----------------------'
     cur.close()
+    return json.dumps(rv_dict)
 
 
 @main.route('/addblog', methods=['POST', 'GET'])
