@@ -11,11 +11,11 @@ class Config:
     FLASKY_MAIL_SENDER = 'Flasky Admin <wzq199001@163.com>'
     FLASKY_ADMIN = os.environ.get('FLASKY_ADMIN')
     FLASKY_COMMENTS_PER_PAGE = os.environ.get('FLASKY_COMMENTS_PER_PAGE')
-    MYSQL_HOST = '127.0.0.1'
-    MYSQL_PORT = 5718
-    MYSQL_USER = 'msandbox'
-    MYSQL_PASSWORD = 'msandbox'
-    MYSQL_DB = 'flask'
+    MYSQL_HOST = os.environ.get('MYSQL_HOST')
+    MYSQL_PORT = int(os.environ.get('MYSQL_PORT'))
+    MYSQL_USER = os.environ.get('MYSQL_USER')
+    MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD')
+    MYSQL_DB = os.environ.get('MYSQL_DB')
 
     @staticmethod
     def init_app(app):
