@@ -58,14 +58,30 @@
                 <li>strace</li>
                 <li>linux</li>
                 <h3>文章归档</h3>
-                <li><a href={{ url_for('.post', id=0) }} >0</a></li>
-                <!--
-                -->
                 <div id="b">
 
                 </div>
                 <li>第一篇文章</li>
                 <li>第二篇文章</li>
+                <div class="panel-group" id="accordion">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h4 class="panel-title">
+                                <a data-toggle="collapse" data-parent="#accordion"
+                                    href="#collapseOne">
+                                        点击我进行展开，再次点击我进行折叠。第 1 部分--hide 方法
+                                </a>
+                            </h4>
+                        </div>
+                    <div id="collapseOne" class="panel-collapse collapse in">
+                        <div class="panel-body">
+                Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred
+                nesciunt sapiente ea proident. Ad vegan excepteur butcher vice
+                lomo.
+                        </div>
+                    </div>
+                </div>
+    </div>
                 <h3>友情链接</h3>
                 <li><a href="www.google.com">google</a> </li>
                 <li><a href="www.facebook.com">facebook</a> </li>
@@ -92,14 +108,14 @@
     -->
     <script type="text/javascript">
         $.get(
-            "get_base",
+            "/get_base",
             function(data){
                 var jsonobj = eval('(' + data + ')');
-                var str = ""
+                var str = '';
                 for (var i in jsonobj){
                     str += "<h4>" + i + "</h4>";
                     for (var j in jsonobj[i]){
-                        str += '<li><a href="/post/' + (j+1) + '">' + (j+1) + '</a></li>';
+                        str += '<li><a href="/post/' + jsonobj[i][j] + '">' + jsonobj[i][j] + '</a></li>';
                     }
                 }
                 var tbody=window.document.getElementById("b");
